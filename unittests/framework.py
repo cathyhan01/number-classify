@@ -13,6 +13,7 @@ _script_dir = Path(os.path.dirname(__file__)).resolve()
 _root_dir = _script_dir / '..'
 _venus = _root_dir / 'tools' / 'venus'
 assert _venus.is_file(), f"Could not find venus at {_venus}"
+env_vars = {"CS61C_TOOLS_ARGS": "-q"}
 
 # --immutableText: immutable text, ensures that code cannot be modified
 # --maxsteps -1: no upper bound on the number of cycles
@@ -32,8 +33,8 @@ def run_venus(filename: str, check_calling_convention: bool = True, extra_flags:
         if extra_flags is not None: cmd += extra_flags
         cmd += [filename]
         if args is not None: cmd += args
-        if verbose: print("Executing: " +" ".join(str(c) for c in cmd))
-        r = subprocess.run(cmd, stdout=subprocess.PIPE, cwd=_root_dir, stderr=subprocess.PIPE)
+        if verbose: print("Executing: " + " ".join(str(c) for c in cmd))
+        r = subprocess.run(cmd, stdout=subprocess.PIPE, cwd=_root_dir, stderr=subprocess.PIPE, env=env_vars)
         try:
             with open(coverage_file) as c:
                 coverage = c.read()
