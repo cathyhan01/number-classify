@@ -20,12 +20,15 @@ assert _venus_path.is_file(), f"Could not find venus loader at {_venus_path}"
 _venus_default_args = ['--immutableText', '--maxsteps', '-1']
 _venus_env = {"CS61C_TOOLS_ARGS": "-q"}
 
-def run_raw_venus(check_calling_convention: bool = True, extra_flags: Optional[List[str]] = None, args: List[str] = None):
+def run_raw_venus(check_calling_convention: bool = True, extra_flags: Optional[List[str]] = None, args: List[str] = None, verbose: bool = False):
     cmd = [_python_bin_path, _venus_path] + _venus_default_args
     if check_calling_convention:
         cmd += ['--callingConvention']
+    if extra_flags:
+        cmd += extra_flags
     if args is not None:
         cmd += args
+    if verbose: print("Executing: " + " ".join(str(c) for c in cmd))
     # print(" ".join((str(c) for c in cmd)))
     r = subprocess.run(cmd, cwd=_root_dir, env=_venus_env, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     return r
@@ -40,13 +43,13 @@ def run_venus(filename: str, check_calling_convention: bool = True, extra_flags:
         if extra_flags is not None: final_flags += extra_flags
         final_args = [filename]
         if args is not None: final_args += args
-        if verbose: print("Executing: " +" ".join(str(c) for c in final_flags)+" ".join(str(c) for c in final_args))
         r = run_raw_venus(check_calling_convention=check_calling_convention,
-                          extra_flags=final_flags, args=final_args)
+                          extra_flags=final_flags, args=final_args, verbose=verbose)
         try:
             with open(coverage_file) as c:
                 coverage = c.read()
         except FileNotFoundError:
+            if verbose: print(f"Could nto find the coverage file `{coverage_file}`!")
             coverage = ""
     return r, coverage
 
