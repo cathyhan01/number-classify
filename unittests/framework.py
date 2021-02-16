@@ -12,7 +12,7 @@ a_regs = {f"a{i}" for i in range(8)}
 _python_bin_path = sys.executable
 _script_dir = Path(os.path.dirname(__file__)).resolve()
 _root_dir = _script_dir / '..'
-_venus_path = _root_dir / 'utils' / 'venus'
+_venus_path = _root_dir / 'tools' / 'venus'
 assert _venus_path.is_file(), f"Could not find venus loader at {_venus_path}"
 
 # --immutableText: immutable text, ensures that code cannot be modified
