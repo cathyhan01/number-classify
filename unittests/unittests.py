@@ -1,5 +1,5 @@
 from unittest import TestCase
-from framework import AssemblyTest, print_coverage
+from framework import AssemblyTest, print_coverage, run_raw_venus
 
 
 class TestAbs(TestCase):
@@ -238,21 +238,16 @@ class TestMain(TestCase):
     """ This sanity check executes src/main.S using venus and verifies the stdout and the file that is generated.
     """
 
-    def run_venus(self, args):
-        cmd = ['../../tools/venus', '--immutableText', '--maxsteps', '-1', '--callingConvention'] + args
-        env_vars = {"CS61C_TOOLS_ARGS": "-q"}
-        #run venus from the project root directory
-        r = subprocess.run(cmd, stdout=subprocess.PIPE, cwd=script_dir / '..', env=env_vars)
-        return r.returncode, r.stdout.decode('utf-8').strip()
-
     def run_main(self, inputs, output_id, label):
-        args = [f"{inputs}/m0.bin", f"{inputs}/m1.bin", f"{inputs}/inputs/input0.bin",
+        args = ["src/main.S", f"{inputs}/m0.bin", f"{inputs}/m1.bin",
+                f"{inputs}/inputs/input0.bin",
                 f"outputs/test_basic_main/student{output_id}.bin"]
         reference = f"outputs/test_basic_main/reference{output_id}.bin"
-        
-        code, stdout = self.run_venus(["src/main.S"] + args)
+
+        r = run_raw_venus(args=args)
+        code, stdout = r.returncode, r.stdout.decode('utf-8').strip()
         self.assertEqual(code, 0, stdout)
-        self.assertEqual(stdout, lbl)
+        self.assertEqual(stdout, label)
 
         compare_files(self, actual=script_dir / '..' / args[-1], expected=script_dir / '..' / reference)
 

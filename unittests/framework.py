@@ -1,7 +1,7 @@
 ##############################################################
 # Do not modify! (But feel free to use the functions provided)
 ##############################################################
-import os, subprocess, unittest, tempfile
+import os, subprocess, unittest, tempfile, sys
 from collections import defaultdict
 from pathlib import Path
 from typing import List, Optional, Set
@@ -9,32 +9,40 @@ from typing import List, Optional, Set
 a_regs = {f"a{i}" for i in range(8)}
 
 # find venus jar
+_python_bin_path = sys.executable
 _script_dir = Path(os.path.dirname(__file__)).resolve()
 _root_dir = _script_dir / '..'
-_venus = _root_dir / 'tools' / 'venus'
-assert _venus.is_file(), f"Could not find venus at {_venus}"
-env_vars = {"CS61C_TOOLS_ARGS": "-q"}
+_venus_path = _root_dir / 'utils' / 'venus'
+assert _venus_path.is_file(), f"Could not find venus loader at {_venus_path}"
 
 # --immutableText: immutable text, ensures that code cannot be modified
 # --maxsteps -1: no upper bound on the number of cycles
 _venus_default_args = ['--immutableText', '--maxsteps', '-1']
+_venus_env = {"CS61C_TOOLS_ARGS": "-q"}
+
+def run_raw_venus(check_calling_convention: bool = True, extra_flags: Optional[List[str]] = None, args: List[str] = None):
+    cmd = [_python_bin_path, _venus_path] + _venus_default_args
+    if check_calling_convention:
+        cmd += ['--callingConvention']
+    if args is not None:
+        cmd += args
+    # print(" ".join((str(c) for c in cmd)))
+    r = subprocess.run(cmd, cwd=_root_dir, env=_venus_env, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    return r
 
 def run_venus(filename: str, check_calling_convention: bool = True, extra_flags: Optional[List[str]] = None, args: Optional[List[str]] = None, verbose: bool = False):
     assert os.path.isfile(filename), f"{filename} not found, cannot run venus"
     # print(filename)
-    cmd = ['python3', _venus] + _venus_default_args
-    if check_calling_convention:
-        cmd += ['--callingConvention']
-    # print(" ".join((str(c) for c in cmd)))
 
     with tempfile.TemporaryDirectory() as tmp_dir:
         coverage_file = Path(tmp_dir) / 'coverage'
-        cmd +=  ['--coverageFile', coverage_file.absolute()]
-        if extra_flags is not None: cmd += extra_flags
-        cmd += [filename]
-        if args is not None: cmd += args
-        if verbose: print("Executing: " + " ".join(str(c) for c in cmd))
-        r = subprocess.run(cmd, stdout=subprocess.PIPE, cwd=_root_dir, stderr=subprocess.PIPE, env=env_vars)
+        final_flags +=  ['--coverageFile', coverage_file.absolute()]
+        if extra_flags is not None: final_flags += extra_flags
+        final_args = [filename]
+        if args is not None: final_args += args
+        if verbose: print("Executing: " +" ".join(str(c) for c in cmd))
+        r = run_raw_venus(check_calling_convention=check_calling_convention,
+                          extra_flags=final_flags, args=final_args)
         try:
             with open(coverage_file) as c:
                 coverage = c.read()
