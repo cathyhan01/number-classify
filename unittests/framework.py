@@ -36,11 +36,11 @@ def run_venus(filename: str, check_calling_convention: bool = True, extra_flags:
 
     with tempfile.TemporaryDirectory() as tmp_dir:
         coverage_file = Path(tmp_dir) / 'coverage'
-        final_flags +=  ['--coverageFile', coverage_file.absolute()]
+        final_flags =  ['--coverageFile', coverage_file.absolute()]
         if extra_flags is not None: final_flags += extra_flags
         final_args = [filename]
         if args is not None: final_args += args
-        if verbose: print("Executing: " +" ".join(str(c) for c in cmd))
+        if verbose: print("Executing: " +" ".join(str(c) for c in final_flags)+" ".join(str(c) for c in final_args))
         r = run_raw_venus(check_calling_convention=check_calling_convention,
                           extra_flags=final_flags, args=final_args)
         try:
