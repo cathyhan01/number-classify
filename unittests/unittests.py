@@ -1,5 +1,5 @@
 from unittest import TestCase
-from framework import AssemblyTest, print_coverage, run_raw_venus
+from framework import AssemblyTest, print_coverage
 
 
 class TestAbs(TestCase):
@@ -244,12 +244,12 @@ class TestMain(TestCase):
                 f"outputs/test_basic_main/student{output_id}.bin"]
         reference = f"outputs/test_basic_main/reference{output_id}.bin"
 
-        r = run_raw_venus(args=args)
-        code, stdout = r.returncode, r.stdout.decode('utf-8').strip()
-        self.assertEqual(code, 0, stdout)
-        self.assertEqual(stdout, label)
-
-        compare_files(self, actual=script_dir / '..' / args[-1], expected=script_dir / '..' / reference)
+        t= AssemblyTest(self, "main.s", no_utils=True)
+        t.include("classify.s")
+        t.call("main")
+        t.execute(args=args)
+        t.check_stdout(label)
+        t.check_file_output(args[-1], reference)
 
     def test0(self):
         self.run_main("inputs/simple0/bin", "0", "2")
