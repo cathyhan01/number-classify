@@ -18,17 +18,20 @@ assert _venus_path.is_file(), f"Could not find venus loader at {_venus_path}"
 # --immutableText: immutable text, ensures that code cannot be modified
 # --maxsteps -1: no upper bound on the number of cycles
 _venus_default_args = ['--immutableText', '--maxsteps', '-1']
-_venus_env = {"CS61C_TOOLS_ARGS": "-q"}
+_venus_env = os.environ.copy()
+_venus_env["CS61C_TOOLS_ARGS"] = _venus_env.get("CS61C_TOOLS_ARGS", "") + "-q"
 
-def run_raw_venus(check_calling_convention: bool = True, extra_flags: Optional[List[str]] = None, args: List[str] = None, verbose: bool = False):
-    cmd = [_python_bin_path, _venus_path] + _venus_default_args
+def run_raw_venus(check_calling_convention: bool = True, extra_flags: Optional[List[str]] = None, args: Optional[List[str]] = None, verbose: bool = False):
+    cmd = [_python_bin_path, str(_venus_path)] + _venus_default_args
     if check_calling_convention:
         cmd += ['--callingConvention']
     if extra_flags:
         cmd += extra_flags
     if args is not None:
         cmd += args
-    if verbose: print("Executing: " + " ".join(str(c) for c in cmd))
+    # Windows + Python <3.8 bug: https://bugs.python.org/issue33617
+    cmd = [str(arg) for arg in cmd]
+    if verbose: print("Executing: " + " ".join(cmd))
     # print(" ".join((str(c) for c in cmd)))
     r = subprocess.run(cmd, cwd=_root_dir, env=_venus_env, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     return r
@@ -39,9 +42,9 @@ def run_venus(filename: str, check_calling_convention: bool = True, extra_flags:
 
     with tempfile.TemporaryDirectory() as tmp_dir:
         coverage_file = Path(tmp_dir) / 'coverage'
-        final_flags =  ['--coverageFile', coverage_file.absolute()]
+        final_flags =  ['--coverageFile', str(coverage_file.absolute())]
         if extra_flags is not None: final_flags += extra_flags
-        final_args = [filename]
+        final_args = [str(filename)]
         if args is not None: final_args += args
         r = run_raw_venus(check_calling_convention=check_calling_convention,
                           extra_flags=final_flags, args=final_args, verbose=verbose)
@@ -49,7 +52,7 @@ def run_venus(filename: str, check_calling_convention: bool = True, extra_flags:
             with open(coverage_file) as c:
                 coverage = c.read()
         except FileNotFoundError:
-            if verbose: print(f"Could nto find the coverage file `{coverage_file}`!")
+            if verbose: print(f"Could not find the coverage file `{coverage_file}`!")
             coverage = ""
     return r, coverage
 
@@ -59,13 +62,15 @@ _global_coverage = defaultdict(lambda: defaultdict(lambda : 0))
 
 def _process_coverage(coverage: str, file_filter: str):
     for line in coverage.split('\n'):
-        if len(line.strip()) == 0: continue
-        p = line.strip().split(' ')
-        assert len(p) == 3, f"Unexpected coverage line {line}. Do you have a space in the filename or path?"
-        import_path, line = p[1].split(':')
+        line = line.strip()
+        if len(line) == 0: continue
+        # space-separated output but paths can have spaces...
+        addr, rem = line.split(' ', 1)
+        path, cov_value = rem.rsplit(' ', 1)
+        import_path, line_num = path.rsplit(':', 1)
         filename = os.path.basename(import_path)
         if filename != file_filter: continue
-        _global_coverage[filename][int(line)] += int(p[2])
+        _global_coverage[filename][int(line_num)] += int(cov_value)
 
 def print_coverage(filename: str, verbose: bool = True):
     if filename not in _global_coverage:
