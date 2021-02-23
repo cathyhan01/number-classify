@@ -19,18 +19,18 @@
 # =======================================================
 dot:
     # Prologue
-    addi sp, sp, -44 # move stack pointer down
+    addi sp, sp, -24 # move stack pointer down
     sw ra, 0(sp) # save return address
     sw s0, 4(sp) # save s-registers
     sw s1, 8(sp)
     sw s2, 12(sp)
     sw s3, 16(sp)
     sw s4, 20(sp)
-    sw s5, 24(sp)
-    sw s6, 28(sp)
-    sw s7, 32(sp)
-    sw s8, 36(sp)
-    sw s9, 40(sp)
+    #sw s5, 24(sp) -44
+    #sw s6, 28(sp)
+    #sw s7, 32(sp)
+    #sw s8, 36(sp)
+    #sw s9, 40(sp)
 
     add s0, a0, x0 # copy start pointer to v0 into s0
     add s1, a1, x0 # copy start pointer to v1 into s1
@@ -66,12 +66,7 @@ dot:
     lw s2, 12(sp)
     lw s3, 16(sp)
     lw s4, 20(sp)
-    lw s5, 24(sp)
-    lw s6, 28(sp)
-    lw s7, 32(sp)
-    lw s8, 36(sp)
-    lw s9, 40(sp)
-    addi sp, sp, 44 # move stack pointer back up
+    addi sp, sp, 24 # move stack pointer back up
     j exit2 # terminate program with appropriate error code
 
 loop_start:
@@ -106,11 +101,6 @@ loop_end:
     lw s2, 12(sp)
     lw s3, 16(sp)
     lw s4, 20(sp)
-    lw s5, 24(sp)
-    lw s6, 28(sp)
-    lw s7, 32(sp)
-    lw s8, 36(sp)
-    lw s9, 40(sp)
-    addi sp, sp, 44 # move stack pointer back up
+    addi sp, sp, 24 # move stack pointer back up
 
     ret

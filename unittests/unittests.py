@@ -50,6 +50,15 @@ class TestRelu(TestCase):
         # generate the `assembly/TestRelu_test_simple.s` file and run it through venus
         t.execute()
 
+    def test_bigger(self):
+        t = AssemblyTest(self, "relu.s")
+        array0 = t.array([-1358, -1934851, 0, 55555, -91934190, -4294813, -94632])
+        t.input_array("a0", array0)
+        t.input_scalar("a1", len(array0))
+        t.call("relu")
+        t.check_array(array0, [0, 0, 0, 55555, 0, 0, 0])
+        t.execute()
+
     def test_single1(self):
         t = AssemblyTest(self, "relu.s")
         array0 = t.array([-89147834])
@@ -68,11 +77,19 @@ class TestRelu(TestCase):
         t.check_array(array0, [10293439])
         t.execute()
 
-    def test_exception(self):
+    def test_exception1(self):
         t = AssemblyTest(self, "relu.s")
         array0 = t.array([])
         t.input_array("a0", array0)
         t.input_scalar("a1", len(array0))
+        t.call("relu")
+        t.execute(code=115)
+
+    def test_exception2(self):
+        t = AssemblyTest(self, "relu.s")
+        array0 = t.array([234])
+        t.input_array("a0", array0)
+        t.input_scalar("a1", -9374591)
         t.call("relu")
         t.execute(code=115)
 
@@ -106,7 +123,7 @@ class TestArgmax(TestCase):
         # generate the `assembly/TestArgmax_test_simple.s` file and run it through venus
         t.execute()
 
-    def test_exception(self):
+    def test_exception1(self):
         t = AssemblyTest(self, "argmax.s")
         array0 = t.array([])
         t.input_array("a0", array0)
@@ -114,10 +131,18 @@ class TestArgmax(TestCase):
         t.call("argmax")
         t.execute(code=120)
 
-    def test_simple2(self):
+    def test_exception2(self):
+        t = AssemblyTest(self, "argmax.s")
+        array0 = t.array([-91385, 999999])
+        t.input_array("a0", array0)
+        t.input_scalar("a1", -777)
+        t.call("argmax")
+        t.execute(code=120)
+
+    def test_bigger(self):
         t = AssemblyTest(self, "argmax.s")
         # create an array in the data section
-        array0 = t.array([0, -29845, 324129, -440, 5999999, 0, 0])
+        array0 = t.array([0, -29845, 324129, -440, 5999999, 0, 5999999, 0])
         # load address of the array into register a0
         t.input_array("a0", array0)
         # set a1 to the length of the array
@@ -159,7 +184,22 @@ class TestArgmax(TestCase):
         # generate the `assembly/TestArgmax_test_simple.s` file and run it through venus
         t.execute()
 
-    def test_bad_input(self):
+    def test_multiple(self):
+        t = AssemblyTest(self, "argmax.s")
+        # create an array in the data section
+        array0 = t.array([-777, -777, -777, -777, -777, -777, -777])
+        # load address of the array into register a0
+        t.input_array("a0", array0)
+        # set a1 to the length of the array
+        t.input_scalar("a1", len(array0))
+        # call the `argmax` function
+        t.call("argmax")
+        # check that the register a0 contains the correct output
+        t.check_scalar("a0", 0)
+        # generate the `assembly/TestArgmax_test_simple.s` file and run it through venus
+        t.execute()
+
+    def test_bad_input1(self):
         t = AssemblyTest(self, "argmax.s")
         # create an array in the data section
         array0 = t.array([-9, 12, 1, 0, 222, 5])
@@ -171,6 +211,21 @@ class TestArgmax(TestCase):
         t.call("argmax")
         # check that the register a0 contains the correct output
         t.check_scalar("a0", 1)
+        # generate the `assembly/TestArgmax_test_simple.s` file and run it through venus
+        t.execute()
+
+    def test_bad_input2(self):
+        t = AssemblyTest(self, "argmax.s")
+        # create an array in the data section
+        array0 = t.array([90009, 66, 77, 88, 10, 5])
+        # load address of the array into register a0
+        t.input_array("a0", array0)
+        # set a1 to the length of the array
+        t.input_scalar("a1", 3)
+        # call the `argmax` function
+        t.call("argmax")
+        # check that the register a0 contains the correct output
+        t.check_scalar("a0", 0)
         # generate the `assembly/TestArgmax_test_simple.s` file and run it through venus
         t.execute()
 
@@ -234,7 +289,25 @@ class TestDot(TestCase):
         t.check_scalar("a0", 48) # 1*1 + 4*3 + 7*5 = 1 + 12 + 35 = 48
         t.execute()
 
-    def test_length_exception(self):
+    def test_stride3(self):
+        t = AssemblyTest(self, "dot.s")
+        # create arrays in the data section
+        array0 = t.array([5, -2, 0, 3, 1, 20, 10, 2, 4, -5])
+        array1 = t.array([2, -3, 1, 0, 10, 12, 50, 10, -10, 1000])
+        # load array addresses into argument registers
+        t.input_array("a0", array0)
+        t.input_array("a1", array1)
+        # load array attributes into argument registers
+        t.input_scalar("a2", 4) # length 4
+        t.input_scalar("a3", 2) # [5, 0, 1, 10]
+        t.input_scalar("a4", 3) # [2, 0, 50, 1000]
+        # call the `dot` function
+        t.call("dot")
+        # check the return value
+        t.check_scalar("a0", 10060) # 10 + 0 + 50 + 10,000 = 10,060
+        t.execute()
+
+    def test_length_exception1(self):
         t = AssemblyTest(self, "dot.s")
         # create arrays in the data section
         array0 = t.array([1, 2, 3, 4, 5, 6, 7, 8, 9])
@@ -251,11 +324,28 @@ class TestDot(TestCase):
         # check the return value
         t.execute(code=123)
 
+    def test_length_exception2(self):
+        t = AssemblyTest(self, "dot.s")
+        # create arrays in the data section
+        array0 = t.array([])
+        array1 = t.array([])
+        # load array addresses into argument registers
+        t.input_array("a0", array0)
+        t.input_array("a1", array1)
+        # load array attributes into argument registers
+        t.input_scalar("a2", -100)
+        t.input_scalar("a3", -3)
+        t.input_scalar("a4", 20)
+        # call the `dot` function
+        t.call("dot")
+        # check the return value
+        t.execute(code=123)
+
     def test_stride_exception1(self):
         t = AssemblyTest(self, "dot.s")
         # create arrays in the data section
         array0 = t.array([1, 2, 3, 4, 5, 6, 7, 8, 9])
-        array1 = t.array([1, 2, 3, 4, 5, 6, 7, 8, 9])
+        array1 = t.array([])
         # load array addresses into argument registers
         t.input_array("a0", array0)
         t.input_array("a1", array1)
@@ -271,7 +361,7 @@ class TestDot(TestCase):
     def test_stride_exception2(self):
         t = AssemblyTest(self, "dot.s")
         # create arrays in the data section
-        array0 = t.array([1, 2, 3, 4, 5, 6, 7, 8, 9])
+        array0 = t.array([])
         array1 = t.array([1, 2, 3, 4, 5, 6, 7, 8, 9])
         # load array addresses into argument registers
         t.input_array("a0", array0)
@@ -279,7 +369,7 @@ class TestDot(TestCase):
         # load array attributes into argument registers
         t.input_scalar("a2", 5)
         t.input_scalar("a3", 2)
-        t.input_scalar("a4", 0)
+        t.input_scalar("a4", -89)
         # call the `dot` function
         t.call("dot")
         # check the return value
@@ -346,8 +436,8 @@ class TestMatmul(TestCase):
 
     def test_m0_dimensions2(self):
         self.do_matmul(
-            [5555], 4, 0,
-            [1, 2, 3, 4, 5, 6, 7, 8, 9], 3, 3,
+            [5555], 4, -1,
+            [1, 2, 3, 4, 5, 6, 7, 8, 9], -3, -43,
             [30, 36, 42, 66, 81, 96, 102, 126, 150],
             code=125
         )
@@ -368,10 +458,18 @@ class TestMatmul(TestCase):
             code=126
         )
 
-    def test_no_match(self):
+    def test_no_match1(self):
         self.do_matmul(
             [-1, -100, 22, 0], 2, 2,
             [0, 5, 1234, -34, 2, 1, 0, 0, 9999], 3, 3,
+            [0, 1, 2],
+            code=127
+        )
+
+    def test_no_match2(self):
+        self.do_matmul(
+            [-1, -100, 22, 0, 49, -7777], 2, 3,
+            [0, 5, 1234, -34, 2, 1, 0, 0, 9999, 123], 2, 5,
             [0, 1, 2],
             code=127
         )

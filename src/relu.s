@@ -14,11 +14,10 @@
 # ==============================================================================
 relu:
     # Prologue
-    addi sp, sp, -16 # move stack pointer down
+    addi sp, sp, -12 # move stack pointer down
     sw ra, 0(sp) # save return address
     sw s0, 4(sp) # save s-registers
     sw s1, 8(sp)
-    sw s2, 12(sp)
 
     add s0, a0, x0 # copy start pointer to array into s0
     add s1, a1, x0 # copy length of array into s1
@@ -33,12 +32,12 @@ relu:
 	lw ra, 0(sp) # load saved return address
     lw s0, 4(sp) # load saved values back into s-registers
     lw s1, 8(sp)
-    lw s2, 12(sp)
-    addi sp, sp, 16
+    addi sp, sp, 12
     j exit2 # terminate, exit2 is in utils.s
 
 loop_start:
 	beq t0, s1, loop_end # Loop condition
+    
     slli t1, t0, 2 # Calculate byte offset
     add a0, s0, t1 # Move array pointer to correct element based on offset
 
@@ -56,7 +55,6 @@ loop_end:
 	lw ra, 0(sp) # load saved return address
     lw s0, 4(sp) # load saved values back into s-registers
     lw s1, 8(sp)
-    lw s2, 12(sp)
-    addi sp, sp, 16 # move stack pointer back up
+    addi sp, sp, 12 # move stack pointer back up
 
 	ret
