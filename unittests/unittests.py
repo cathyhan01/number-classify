@@ -245,7 +245,6 @@ class TestMain(TestCase):
         reference = f"outputs/test_basic_main/reference{output_id}.bin"
 
         t= AssemblyTest(self, "main.s", no_utils=True)
-        t.include("classify.s")
         t.call("main")
         t.execute(args=args)
         t.check_stdout(label)
