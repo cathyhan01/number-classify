@@ -516,6 +516,11 @@ class TestReadMatrix(TestCase):
         self.arr = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
         self.do_read_matrix()
 
+    def test_nonsquare(self):
+        self.file_name = "inputs/test_read_matrix/test_nonsquare.bin"
+        self.arr = [1, 2, 3, -12934, 55, 3339, 0, -5005, 6789, 4, 5, 6, 432, -9990, -12, 0, 0, 309847221]
+        self.do_read_matrix()
+
     def test_fopen_failure(self):
         self.file_name = "inputs/test_read_matrix/test_input.bin"
         self.arr = [1, 2, 3, 4, 5, 6, 7, 8, 9]
