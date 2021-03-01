@@ -548,23 +548,80 @@ class TestReadMatrix(TestCase):
 
 class TestWriteMatrix(TestCase):
 
+    outfile = ""
+    arr = []
+    num_rows = 0
+    num_cols = 0
+    reference = ""
+
     def do_write_matrix(self, fail='', code=0):
         t = AssemblyTest(self, "write_matrix.s")
-        outfile = "outputs/test_write_matrix/student.bin"
+
         # load output file name into a0 register
-        t.input_write_filename("a0", outfile)
+        t.input_write_filename("a0", self.outfile)
+
         # load input array and other arguments
-        raise NotImplementedError("TODO")
-        # TODO
+        t.input_array("a1", t.array(self.arr))
+        t.input_scalar("a2", self.num_rows)
+        t.input_scalar("a3", self.num_cols)
+
         # call `write_matrix` function
         t.call("write_matrix")
+
         # generate assembly and run it through venus
         t.execute(fail=fail, code=code)
+
         # compare the output file against the reference
-        t.check_file_output(outfile, "outputs/test_write_matrix/reference.bin")
+        if (fail == '' and code == 0):
+            t.check_file_output(self.outfile, self.reference)
 
     def test_simple(self):
+        self.outfile = "outputs/test_write_matrix/student.bin"
+        self.arr = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+        self.num_rows = 3
+        self.num_cols = 3
+        self.reference = "outputs/test_write_matrix/reference.bin"
         self.do_write_matrix()
+
+    def test_bigger(self):
+        self.outfile = "outputs/test_write_matrix/student1.bin"
+        self.arr = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+        self.num_rows = 10
+        self.num_cols = 10
+        self.reference = "outputs/test_write_matrix/reference1.bin"
+        self.do_write_matrix()
+
+    def test_nonsquare(self):
+        self.outfile = "outputs/test_write_matrix/student2.bin"
+        self.arr = [-3, 4, 9, 0, 10, -999, 10000, 52139, 101010, -12340, 6, 4, 8, 2, 4] # 3x5 matrix
+        self.num_rows = 3
+        self.num_cols = 5
+        self.reference = "outputs/test_write_matrix/reference2.bin"
+        self.do_write_matrix()
+
+    def test_fopen_failure(self):
+        self.outfile = "outputs/test_write_matrix/student2.bin"
+        self.arr = [-3, 4, 9, 0, 10, -999, 10000, 52139, 101010, -12340, 6, 4, 8, 2, 4] # 3x5 matrix
+        self.num_rows = 3
+        self.num_cols = 5
+        self.reference = "outputs/test_write_matrix/reference2.bin"
+        self.do_write_matrix(fail='fopen', code=112)
+
+    def test_fwrite_failure(self):
+        self.outfile = "outputs/test_write_matrix/student2.bin"
+        self.arr = [-3, 4, 9, 0, 10, -999, 10000, 52139, 101010, -12340, 6, 4, 8, 2, 4] # 3x5 matrix
+        self.num_rows = 3
+        self.num_cols = 5
+        self.reference = "outputs/test_write_matrix/reference2.bin"
+        self.do_write_matrix(fail='fwrite', code=113)
+
+    def test_fclose_failure(self):
+        self.outfile = "outputs/test_write_matrix/student2.bin"
+        self.arr = [-3, 4, 9, 0, 10, -999, 10000, 52139, 101010, -12340, 6, 4, 8, 2, 4] # 3x5 matrix
+        self.num_rows = 3
+        self.num_cols = 5
+        self.reference = "outputs/test_write_matrix/reference2.bin"
+        self.do_write_matrix(fail='fclose', code=114)
 
     @classmethod
     def tearDownClass(cls):
