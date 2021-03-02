@@ -27,7 +27,7 @@
 read_matrix:
 
     # Prologue
-	addi sp, sp, -32 # move stack pointer down
+	addi sp, sp, -28 # move stack pointer down
     sw ra, 0(sp) # save return address to stack
     sw s0, 4(sp) # save s-registers
     sw s1, 8(sp)
@@ -35,7 +35,6 @@ read_matrix:
     sw s3, 16(sp)
     sw s4, 20(sp)
     sw s5, 24(sp)
-    sw s6, 28(sp)
 
     # Save arguments into s-registers
     addi s0, a0, 0 # save filename string into s0
@@ -51,70 +50,69 @@ read_matrix:
     # Check file open failure
     li t0, -1 # temporary -1
     beq s3, t0, fopen_err # file descriptor == -1
-    j malloc_mem
+    j read_rownum
 
     # file open error
     fopen_err:
     addi a1, x0, 117 # error code 117
     j exit2 # terminate program with appropriate error code
-
-    # Call malloc to alloc space to create a buffer which is going into a2 to read file
-    malloc_mem:
-    addi a0, x0, 8 # (load args) we need 8 bytes to read row and col #s
-	jal malloc # call malloc
-    addi s4, a0, 0 # save pointer to the alloc'd heap memory into s4
-
-    # Check malloc failure
-    beq s4, x0, malloc_err # pointer == 0 (NULL)
-    j read_file
-
-    # malloc error
-    malloc_err:
-    addi a1, x0, 116 # error code 116
-    j exit2 # terminate program with appropriate error code
-
-    # Read the first 8 bytes of the file (to get dimensions)
-    read_file:
+    
+    # Read the first 4 bytes of the file (to get row num)
+    read_rownum:
 	addi a1, s3, 0 # (load args) put file descriptor into a1 register
-    addi a2, s4, 0 # (load args) put pointer to read buffer into a2 register
-    addi a3, x0, 8 # (load args) we're going to read 8 bytes from the file
+    addi a2, s1, 0 # (load args) put pointer to read buffer(s1) into a2 register
+    addi a3, x0, 4 # (load args) we're going to read 4 bytes from the file
 	jal fread # call fread to read file, return a0=#bytes actually read
-
+    
     # check fread error or EOF
-	li t0, 8 # we should have read 8 bytes from the file
-    bne a0, t0, fread_err # num bytes read != 8 bytes: error occurred
-    j process_dimensions
+	li t0, 4 # we should have read 4 bytes from the file
+    bne a0, t0, fread_err # num bytes read != 4 bytes: error occurred
+    j read_colnum # no error or EOF, read next 4 bytes for the col num
 
     # fread error(EOF reached or other error)
     fread_err:
     addi a1, x0, 118 # error code 118
     j exit2 # terminate program with appropriate error code
-
-    # Process the 8 bytes we just read: save num rows, cols, and calc total num elements
-    process_dimensions:
-    lw s1, 0(s4) # load the first 4 bytes of the buffer into s1 (m = num rows)
-    lw s2, 4(s4) # load the next 4 bytes of the buffer into s2 (n = num cols)
     
-    mul s5, s1, s2 # calculate total number of elements in matrix (r = m*n elements)
-    slli s5, s5, 2 # logical left shift r to multiply by 4 bytes (total num bytes for matrix)
+    # Read the next 4 bytes of the file (to get col num)
+    read_colnum:
+	addi a1, s3, 0 # (load args) put file descriptor into a1 register
+    addi a2, s2, 0 # (load args) put pointer to read buffer(s2) into a2 register
+    addi a3, x0, 4 # (load args) we're going to read 4 bytes from the file
+	jal fread # call fread to read file, return a0=#bytes actually read
+
+    # check fread error or EOF
+	li t0, 4 # we should have read 4 bytes from the file
+    bne a0, t0, fread_err # num bytes read != 4 bytes: error occurred
+
+    # Process the 8 bytes we just read: calc total num elements
+    lw t0, 0(s1) # load the actual num of rows
+    lw t1, 0(s2) # load the actual num of cols
+    mul s4, t0, t1 # calculate total number of elements in matrix (r = m*n elements)
+    slli s4, s4, 2 # logical left shift r to multiply by 4 bytes (total num bytes for matrix)
 
     # Call malloc to alloc enough space for whole matrix containing r=m*n elements
-    addi a0, s5, 0 # (load args) we want r*4 bytes, put into a0 register
+    addi a0, s4, 0 # (load args) we want r*4 bytes, put into a0 register
     jal malloc # call malloc
-    addi s6, a0, 0 # save pointer to memory space for matrix
+    addi s5, a0, 0 # save pointer to memory space for matrix
 
     # Check malloc failure
-    beq s6, x0, malloc_err # pointer == 0 (NULL)
-    # no malloc failure here
+    beq s5, x0, malloc_err # pointer == 0 (NULL)
+    j read_file # no malloc failure
+    
+    malloc_err:
+    addi a1, x0, 116 # error code 116
+    j exit2 # terminate program with appropriate error code
 
     # Read the rest of the file to get matrix values
+    read_file:
     addi a1, s3, 0 # (load args) put file descriptor into a1 register
-    addi a2, s6, 0 # (load args) put pointer to read buffer into a2 register
-    addi a3, s5, 0 # (load args) we're going to read r*4 bytes from the file
+    addi a2, s5, 0 # (load args) put pointer to read buffer into a2 register
+    addi a3, s4, 0 # (load args) we're going to read r*4 bytes from the file
     jal fread # call fread to read file, return a0=#bytes actually read
 
     # check fread error or EOF
-    bne a0, s5, fread_err # we should have read r*4 bytes from the file
+    bne a0, s4, fread_err # we should have read r*4 bytes from the file
     # no fread error or EOF here
 
     # Done reading, call fclose to close the file we've read from
@@ -132,9 +130,9 @@ read_matrix:
 
     # So at this point, all r-elements of the matrix should be in the buffer we malloc'd
     done:
-    add a0, s6, x0 # put pointer to matrix into return arg register
-    addi a1, s1, 0 # put num rows back into a1 register
-    addi a2, s2, 0 # put num cols back into a2 register
+    addi a0, s5, 0 # put pointer to matrix into return arg register
+    addi a1, s1, 0 # put num rows pointer back into a1 register
+    addi a2, s2, 0 # put num cols pointer back into a2 register
     
     # Epilogue
     lw ra, 0(sp) # load saved return address from stack
@@ -144,7 +142,6 @@ read_matrix:
     lw s3, 16(sp)
     lw s4, 20(sp)
     lw s5, 24(sp)
-    lw s6, 28(sp)
-    addi sp, sp, 32 # move stack pointer back up
+    addi sp, sp, 28 # move stack pointer back up
 
     ret

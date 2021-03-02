@@ -87,12 +87,12 @@ classify:
 
     addi s4, a0, 0 # save pointer to matrix in memory
 
-    addi s5, a1, 0
+    lw s5, 0(s2) # temporarily load num rows into s5
     addi a0, s2, 0 # need to free memory in s2
     jal free
     addi s2, s5, 0 # put actual num rows into s2
 
-    addi s5, a2, 0
+    lw s5, 0(s3) # temporarily load num cols into s5
     addi a0, s3, 0 # need to free memory in s3
     jal free
     addi s3, s5, 0 # put actual num cols into s3
@@ -125,12 +125,12 @@ classify:
 
     addi s7, a0, 0 # save pointer to matrix in memory
 
-    addi s8, a1, 0
+    lw s8, 0(s5) # temporarily load num rows into s8
     addi a0, s5, 0 # need to free memory in s5
     jal free
     addi s5, s8, 0 # put actual num rows into s5
 
-    addi s8, a2, 0
+    lw s8, 0(s6) # temporarily load num cols into s8
     addi a0, s6, 0 # need to free memory in s6
     jal free
     addi s6, s8, 0 # put actual num cols into s6
@@ -163,16 +163,16 @@ classify:
 
     addi s10, a0, 0 # save pointer to matrix in memory
 
-    addi s11, a1, 0
+    lw s11, 0(s8) # temporarily load num rows into s11
     addi a0, s8, 0 # need to free memory in s8
     jal free
     addi s8, s11, 0 # put actual num rows into s8
 
-    addi s11, a2, 0
+    lw s11, 0(s9) # temporarily load num cols into s11
     addi a0, s9, 0 # need to free memory in s9
     jal free
     addi s9, s11, 0 # put actual num cols into s9
-    
+
     # =====================================
     # RUN LAYERS
     # =====================================
@@ -273,7 +273,7 @@ classify:
     # Free everything remaining (should just be the last copy of scores)
     addi a0, s10, 0 # (load args) put pointer to scores in a0
     jal free # free memory malloc'd in s4 for scores
-    
+
     addi a0, s4, 0 # put classification back into return arg a0
 
     # Epilogue

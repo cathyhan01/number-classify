@@ -494,8 +494,8 @@ class TestReadMatrix(TestCase):
         cols = t.array([-1])
 
         # load the addresses to the output parameters into the argument registers
-        t.input_scalar("a1", 3)
-        t.input_scalar("a2", 3)
+        t.input_array("a1", rows)
+        t.input_array("a2", cols)
 
         # call the read_matrix function
         t.call("read_matrix")
@@ -694,5 +694,5 @@ class TestMain(TestCase):
     def test0(self):
         self.run_main("inputs/simple0/bin", "0", "2")
 
-    def test1(self):
-        self.run_main("inputs/simple1/bin", "1", "1")
+    #def test1(self):
+    #    self.run_main("inputs/simple1/bin", "1", "1")
