@@ -654,7 +654,7 @@ class TestClassify(TestCase):
         # compare the output file and
         t.check_file_output(out_file, ref_file)
         # compare the classification output with `check_stdout`
-        t.check_stdout() # TODO: figure out what the argument should be here
+        t.check_stdout("2")
 
     @classmethod
     def tearDownClass(cls):

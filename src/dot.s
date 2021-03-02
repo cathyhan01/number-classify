@@ -26,11 +26,6 @@ dot:
     sw s2, 12(sp)
     sw s3, 16(sp)
     sw s4, 20(sp)
-    #sw s5, 24(sp) -44
-    #sw s6, 28(sp)
-    #sw s7, 32(sp)
-    #sw s8, 36(sp)
-    #sw s9, 40(sp)
 
     add s0, a0, x0 # copy start pointer to v0 into s0
     add s1, a1, x0 # copy start pointer to v1 into s1
