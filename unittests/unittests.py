@@ -646,15 +646,73 @@ class TestClassify(TestCase):
         ref_file = "outputs/test_basic_main/reference0.bin"
         args = ["inputs/simple0/bin/m0.bin", "inputs/simple0/bin/m1.bin",
                 "inputs/simple0/bin/inputs/input0.bin", out_file]
+        t.input_scalar("a2", 0)
         # call classify function
         t.call("classify")
+        t.check_scalar("a0", 2)
         # generate assembly and pass program arguments directly to venus
         t.execute(args=args)
-
         # compare the output file and
         t.check_file_output(out_file, ref_file)
         # compare the classification output with `check_stdout`
         t.check_stdout("2")
+
+    def test_simple0_input0_noprint(self):
+        t = self.make_test()
+        out_file = "outputs/test_basic_main/student0.bin"
+        ref_file = "outputs/test_basic_main/reference0.bin"
+        args = ["inputs/simple0/bin/m0.bin", "inputs/simple0/bin/m1.bin",
+                "inputs/simple0/bin/inputs/input0.bin", out_file]
+        t.input_scalar("a2", 55)
+        # call classify function
+        t.call("classify")
+        t.check_scalar("a0", 2)
+        # generate assembly and pass program arguments directly to venus
+        t.execute(args=args)
+        # compare the output file and
+        t.check_file_output(out_file, ref_file)
+        # compare the classification output with `check_stdout`
+        t.check_stdout("")
+
+    def test_simple2_input2(self):
+        t = self.make_test()
+        out_file = "outputs/test_basic_main/student0.bin"
+        ref_file = "outputs/test_basic_main/reference2.bin"
+        args = ["inputs/simple2/bin/m0.bin", "inputs/simple2/bin/m1.bin",
+                "inputs/simple2/bin/inputs/input0.bin", out_file]
+        t.input_scalar("a2", 0)
+        # call classify function
+        t.call("classify")
+        t.check_scalar("a0", 7)
+        # generate assembly and pass program arguments directly to venus
+        t.execute(args=args)
+        # compare the output file and
+        t.check_file_output(out_file, ref_file)
+        # compare the classification output with `check_stdout`
+        t.check_stdout("7")
+
+    def test_less_argc(self):
+        t = self.make_test()
+        out_file = "outputs/test_basic_main/student0.bin"
+        ref_file = "outputs/test_basic_main/reference2.bin"
+        args = ["inputs/simple2/bin/m0.bin"]
+        t.input_scalar("a2", 0)
+        # call classify function
+        t.call("classify")
+        # generate assembly and pass program arguments directly to venus
+        t.execute(args=args, code=121)
+
+    def test_malloc_failure(self):
+        t = self.make_test()
+        out_file = "outputs/test_basic_main/student0.bin"
+        ref_file = "outputs/test_basic_main/reference2.bin"
+        args = ["inputs/simple2/bin/m0.bin", "inputs/simple2/bin/m1.bin",
+                "inputs/simple2/bin/inputs/input0.bin", out_file]
+        t.input_scalar("a2", 0)
+        # call classify function
+        t.call("classify")
+        # generate assembly and pass program arguments directly to venus
+        t.execute(args=args, code=122, fail='malloc')
 
     @classmethod
     def tearDownClass(cls):
@@ -678,9 +736,9 @@ def compare_files(test, actual, expected):
 class TestMain(TestCase):
     """ This sanity check executes src/main.S using venus and verifies the stdout and the file that is generated.
     """
-
+#"src/main.S",
     def run_main(self, inputs, output_id, label):
-        args = ["src/main.S", f"{inputs}/m0.bin", f"{inputs}/m1.bin",
+        args = [f"{inputs}/m0.bin", f"{inputs}/m1.bin",
                 f"{inputs}/inputs/input0.bin",
                 f"outputs/test_basic_main/student{output_id}.bin"]
         reference = f"outputs/test_basic_main/reference{output_id}.bin"
@@ -694,5 +752,8 @@ class TestMain(TestCase):
     def test0(self):
         self.run_main("inputs/simple0/bin", "0", "2")
 
-    #def test1(self):
-    #    self.run_main("inputs/simple1/bin", "1", "1")
+    def test1(self):
+       self.run_main("inputs/simple1/bin", "1", "1")
+
+    def test2(self):
+       self.run_main("inputs/simple2/bin", "2", "7")

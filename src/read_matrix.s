@@ -56,14 +56,14 @@ read_matrix:
     fopen_err:
     addi a1, x0, 117 # error code 117
     j exit2 # terminate program with appropriate error code
-    
+
     # Read the first 4 bytes of the file (to get row num)
     read_rownum:
 	addi a1, s3, 0 # (load args) put file descriptor into a1 register
     addi a2, s1, 0 # (load args) put pointer to read buffer(s1) into a2 register
     addi a3, x0, 4 # (load args) we're going to read 4 bytes from the file
 	jal fread # call fread to read file, return a0=#bytes actually read
-    
+
     # check fread error or EOF
 	li t0, 4 # we should have read 4 bytes from the file
     bne a0, t0, fread_err # num bytes read != 4 bytes: error occurred
@@ -73,7 +73,7 @@ read_matrix:
     fread_err:
     addi a1, x0, 118 # error code 118
     j exit2 # terminate program with appropriate error code
-    
+
     # Read the next 4 bytes of the file (to get col num)
     read_colnum:
 	addi a1, s3, 0 # (load args) put file descriptor into a1 register
@@ -99,7 +99,7 @@ read_matrix:
     # Check malloc failure
     beq s5, x0, malloc_err # pointer == 0 (NULL)
     j read_file # no malloc failure
-    
+
     malloc_err:
     addi a1, x0, 116 # error code 116
     j exit2 # terminate program with appropriate error code
@@ -133,7 +133,7 @@ read_matrix:
     addi a0, s5, 0 # put pointer to matrix into return arg register
     addi a1, s1, 0 # put num rows pointer back into a1 register
     addi a2, s2, 0 # put num cols pointer back into a2 register
-    
+
     # Epilogue
     lw ra, 0(sp) # load saved return address from stack
     lw s0, 4(sp) # load saved s-registers

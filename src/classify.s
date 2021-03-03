@@ -80,7 +80,7 @@ classify:
     # no malloc failures at all
 
     # Prepare to call read_matrix
-	lw a0, 4(s0) # (load args) get M0_PATH string at index 1 of argv
+	lw a0, 4(s0) # (load args) get M0_PATH string at index 1 of argv<<<<<<<<<<<
 	addi a1, s2, 0 # (load args) put pointer to num rows into a1 register
     addi a2, s3, 0 # (load args) put pointer to num cols into a2 register
     jal read_matrix
@@ -96,7 +96,7 @@ classify:
     addi a0, s3, 0 # need to free memory in s3
     jal free
     addi s3, s5, 0 # put actual num cols into s3
-
+    
     ############ Load pretrained m1
 
     # Call malloc twice to alloc space for pointer to num rows and pointer to num cols
@@ -124,17 +124,17 @@ classify:
     jal read_matrix
 
     addi s7, a0, 0 # save pointer to matrix in memory
-
+    
     lw s8, 0(s5) # temporarily load num rows into s8
     addi a0, s5, 0 # need to free memory in s5
     jal free
     addi s5, s8, 0 # put actual num rows into s5
-
+    
     lw s8, 0(s6) # temporarily load num cols into s8
     addi a0, s6, 0 # need to free memory in s6
     jal free
     addi s6, s8, 0 # put actual num cols into s6
-
+    
     ############ Load input matrix
 
 	# Call malloc twice to alloc space for pointer to num rows and pointer to num cols
@@ -172,7 +172,7 @@ classify:
     addi a0, s9, 0 # need to free memory in s9
     jal free
     addi s9, s11, 0 # put actual num cols into s9
-
+    
     # =====================================
     # RUN LAYERS
     # =====================================
@@ -275,7 +275,7 @@ classify:
     jal free # free memory malloc'd in s4 for scores
 
     addi a0, s4, 0 # put classification back into return arg a0
-
+    
     # Epilogue
     lw ra, 0(sp) # load saved return address
     lw s0, 4(sp) # load saved s-register values
