@@ -1,4 +1,4 @@
-# sp21-proj2-starter
+# Classify
 
 ```
 .
@@ -23,6 +23,3 @@
     ├── framework.py (do not modify)
     └── unittests.py (partA + partB)
 ```
-
-
-## Here's what I did in project 2:
